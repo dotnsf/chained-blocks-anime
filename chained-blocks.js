@@ -1,0 +1,106 @@
+var blocks = [];
+
+var r;
+var g;
+var b;
+
+var color_index = -1;
+
+function setup() {
+  createCanvas(1000, 500);
+}
+
+function mouseClicked(){
+  if( color_index == -1 ){
+    newBlock( ( new Date() ).getTime() ); //. スタート
+  }else{
+    //console.log( '[' + mouseX + ',' + mouseY + ']')
+    var idx_x = Math.floor( mouseX / 100 )
+    var idx_y = Math.floor( mouseY / 100 )
+    idx_x = ( idx_y % 2 ? 9 - idx_x : idx_x );
+    idx_y = 4 - idx_y;
+    var idx = 10 * idx_y + idx_x;
+    if( color_index >= idx && blocks[idx] ){
+      console.log( blocks[idx].id + ': ' + blocks[idx].m );
+    }else{
+    }
+  }
+}
+
+function draw() {
+  background(245);
+
+  for (var i = 0; i < blocks.length; i++) {
+  	blocks[i].draw();
+  	blocks[i].update();
+  	blocks[i].checkEdges();
+  }
+}
+
+function Block(x, y, id, m, r, g, b){
+  this.index = color_index;
+  this.x = x;
+  this.y = y;
+  this.id = id;
+  this.m = m;
+
+  // start position
+  this.pos = createVector(this.x, 0/*this.y*/);
+
+  this.r = r;
+  this.g = g;
+  this.b = b;
+
+  this.draw = function(){
+    // Draw the block
+    noStroke();
+    fill(this.r, this.g, this.b);
+    rect(this.pos.x, this.pos.y, 100, 100 );
+
+    stroke( 255, 255, 255 );
+    strokeWeight( 5 );
+    line(this.pos.x, this.pos.y+50, this.pos.x+99, this.pos.y+50);
+    line(this.pos.x, this.pos.y+99, this.pos.x+99, this.pos.y+99);
+    strokeWeight( 3 );
+    line(this.pos.x+25, this.pos.y, this.pos.x+25, this.pos.y+50);
+    line(this.pos.x+75, this.pos.y+50, this.pos.x+75, this.pos.y+99);
+  };
+
+  this.update = function(){
+    this.pos.y += 10;
+    //console.log( 'y = ' + this.y + ', pos.y = ' + this.pos.y ); //. 110 -> -90
+  };
+
+  this.checkEdges = function() {
+    if (this.pos.y + 100 > this.y) {
+      this.pos.y = this.y - 100;
+      if( this.index == color_index ){
+        if( color_index >= 39 && color_index % 10 == 9 ){
+          //. ブロックを縦に一段ずらす
+          for( var i = blocks.length - 1; i >= 10; i -- ){
+            blocks[i].y = blocks[i-10].y;
+          }
+
+          blocks.splice(0, 10);
+        }
+        newBlock( ( new Date() ).getTime() );
+      }
+    }
+  };
+}
+
+function newBlock(id){
+  color_index ++;
+
+  var block_x = color_index % 10;
+  var block_y = Math.floor( color_index / 10 );
+
+  block_x = ( block_y % 2 ? 9 - block_x : block_x );
+  block_y = ( color_index < 40 ? 5 - block_y : 2 );
+
+  r = ( color_index % 4 ) * 64;
+  g = ( Math.floor( color_index / 4 ) % 4 ) * 64;
+  b = ( Math.floor( color_index / 16 ) % 4 ) * 64;
+
+  blocks.push(new Block(block_x * 100, block_y * 100, id, '#' + color_index, r, g, b));
+}

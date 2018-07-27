@@ -5,9 +5,24 @@ var g;
 var b;
 
 var color_index = -1;
+var select_index = -1;
+
+var init_blocks_num = 0;
+var draw_status = 0;
 
 function setup() {
   createCanvas(1000, 500);
+  init_blocks_num = random( 10, 15 );
+}
+
+function keyTyped(){
+  if( draw_status == 1 ){
+    if( key === 'b' ){
+      newBlock( ( new Date() ).getTime() );
+    }
+  }
+
+  return false;
 }
 
 function mouseClicked(){
@@ -21,10 +36,14 @@ function mouseClicked(){
     idx_y = 4 - idx_y;
     var idx = 10 * idx_y + idx_x;
     if( color_index >= idx && blocks[idx] ){
+      select_index = idx;
       console.log( blocks[idx].id + ': ' + blocks[idx].m );
     }else{
+      select_index = -1;
     }
   }
+
+  return false;
 }
 
 function draw() {
@@ -64,6 +83,13 @@ function Block(x, y, id, m, r, g, b){
     strokeWeight( 3 );
     line(this.pos.x+25, this.pos.y, this.pos.x+25, this.pos.y+50);
     line(this.pos.x+75, this.pos.y+50, this.pos.x+75, this.pos.y+99);
+
+    if( select_index > -1 && this.index == select_index ){
+      stroke( 255, 0, 0 );
+      strokeWeight( 5 );
+      noFill();
+      rect(this.pos.x, this.pos.y, 100, 100 );
+    }
   };
 
   this.update = function(){
@@ -75,7 +101,7 @@ function Block(x, y, id, m, r, g, b){
     if (this.pos.y + 100 > this.y) {
       this.pos.y = this.y - 100;
       if( this.index == color_index ){
-        if( color_index >= 39 && color_index % 10 == 9 ){
+        if( blocks.length > 30 && color_index >= 39 && color_index % 10 == 9 ){
           //. ブロックを縦に一段ずらす
           for( var i = blocks.length - 1; i >= 10; i -- ){
             blocks[i].y = blocks[i-10].y;
@@ -83,7 +109,14 @@ function Block(x, y, id, m, r, g, b){
 
           blocks.splice(0, 10);
         }
-        newBlock( ( new Date() ).getTime() );
+
+        if( draw_status == 0 ){
+          if( blocks.length < init_blocks_num ){
+            newBlock( ( new Date() ).getTime() );
+          }else{
+            draw_status = 1;
+          }
+        }
       }
     }
   };
